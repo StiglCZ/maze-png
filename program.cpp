@@ -67,6 +67,7 @@ bool isUsable(u8* field, Point p) {
     if(field[p.x + p.y * W] != 1) return 0;
     return 1;
 }
+
 void beatMaze(u8* field) {
     Point nextPos;
     std::stack<Point> history;
@@ -112,7 +113,7 @@ void image_create(u8* data, int w, int h) {
 
 void drawSquare(u8* output, Point pos, Color col) {
     for(int i =0; i < Scale; i++)
-        for(int j =0; j < Scale; j++){
+        for(int j =0; j < Scale; j++) {
             output[3 * (Scale * pos.x + Scale * pos.y * W * Scale + i * W * Scale + j) + 0] = col.r;
             output[3 * (Scale * pos.x + Scale * pos.y * W * Scale + i * W * Scale + j) + 1] = col.g;
             output[3 * (Scale * pos.x + Scale * pos.y * W * Scale + i * W * Scale + j) + 2] = col.b;
@@ -141,7 +142,7 @@ int main() {
     std::cout << "Generating...\n";
     createMaze(field);
     std::cout << "Beating...\n";
-//    beatMaze(field);
+    beatMaze(field);
     std::cout << "Exporting...\n";
     createImage(field);
     std::cout << "Done!\n";
