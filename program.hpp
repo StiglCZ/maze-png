@@ -1,6 +1,6 @@
 #ifndef PROGRAM_HPP
 #define PROGRAM_HPP
-
+#include <png.h>
 typedef unsigned char u8;
 struct Point {
     int x;
@@ -9,11 +9,21 @@ struct Point {
         return a.x == b.x && a.y == b.y;
     }
 };
+struct Color {
+    int r, g, b;
+};
+
+const Color
+    WALL = {0x88, 0x88, 0x88},
+    ENDS = {0xff, 0x00, 0x00},
+    BACK = {0xee, 0xee, 0xee},
+    AUTO = {0x00, 0x00, 0xfe};
+
 
 const int
-    W = 121,
-    H = 121,
-    Scale = 3;
+    W = 131,
+    H = 131,
+    Scale = 10;
 
 const bool
     solve_maze = true,
@@ -27,15 +37,9 @@ const Point start = {0, 0};
 #endif
 
 // Maping utils
-#define createDirections(p) Point                                       \
-    up = {p.x, p.y - 2}, down = {p.x, p.y + 2},                         \
-    left = {p.x - 2, p.y}, right = {p.x + 2, p.y}
-
-#define checkAll() createDirections(pos);                        \
-    if(isPossible(field, up)) possible.push_back(up);            \
-    if(isPossible(field, down)) possible.push_back(down);        \
-    if(isPossible(field, left)) possible.push_back(left);        \
-    if(isPossible(field, right)) possible.push_back(right);
+#define createDirections(p, s) Point                                 \
+    up = {p.x, p.y - s}, down = {p.x, p.y + s},                         \
+    left = {p.x - s, p.y}, right = {p.x + s, p.y};
 
 inline void fill(u8* field, Point o, Point n) {
     if(o.x != n.x) field[((n.x - o.x) / 2) + o.y * W + o.x] = 1;

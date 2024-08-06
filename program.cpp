@@ -2,14 +2,13 @@
 #include <iostream>
 #include <stack>
 #include <vector>
-#include <png.h>
-#include <raylib.h>
 #include "program.hpp"
 
-bool isPossible(u8* field, Point p) {
+bool isPossible(u8* field, Point p, int val) {
     if(p.x < 0 || p.y < 0) return 0;
     if(p.x >= W || p.y >= H) return 0;
-    if(field[p.x + p.y * W] == 1) return 0;
+    if(val == 1 && field[p.x + p.y * W] == 1) return 0;
+    if(val == 0 && field[p.x + p.y * W] != 1) return 0;
     return 1;
 }
 
@@ -19,7 +18,11 @@ void createMaze(u8* field) {
     Point pos = start;
     while(1){
         std::vector<Point> possible;
-        checkAll();
+        createDirections(pos, 2);
+        if(isPossible(field, up,    1)) possible.push_back(up);
+        if(isPossible(field, down,  1)) possible.push_back(down);
+        if(isPossible(field, left,  1)) possible.push_back(left);
+        if(isPossible(field, right, 1)) possible.push_back(right);
         if(possible.empty()){
             if(history.empty()) return;
             pos = history.top();
@@ -33,23 +36,17 @@ void createMaze(u8* field) {
     }
 }
 
-bool isUsable(u8* field, Point p) {
-    if(p.x < 0 || p.y < 0) return 0;
-    if(p.x >= W || p.y >= H) return 0;
-    if(field[p.x + p.y * W] != 1) return 0;
-    return 1;
-}
-
 void beatMaze(u8* field) {
     Point nextPos;
     std::stack<Point> history;
     Point pos = start;
     int counter = 0;
     while(1) {
-        if(isUsable(field, {pos.x - 1, pos.y})) nextPos = {pos.x - 1, pos.y};
-        else if(isUsable(field, {pos.x + 1, pos.y})) nextPos = {pos.x + 1, pos.y};
-        else if(isUsable(field, {pos.x, pos.y - 1})) nextPos = {pos.x, pos.y - 1};
-        else if(isUsable(field, {pos.x, pos.y + 1})) nextPos = {pos.x, pos.y + 1};
+        createDirections(pos, 1);
+        if     (isPossible(field, up, 0))    nextPos = up;
+        else if(isPossible(field, down, 0))  nextPos = down;
+        else if(isPossible(field, left, 0))  nextPos = left;
+        else if(isPossible(field, right, 0)) nextPos = right;
         else {
             field[pos.y * W + pos.x] = 3;
             pos = history.top();
@@ -91,6 +88,7 @@ void drawSquare(u8* output, Point pos, Color col) {
             output[3 * (base + i * W * Scale + j) + 2] = col.b;
         }
 }
+
 void createImage(const char* file, u8* field) {
     u8 *output = new u8[W * Scale * H * Scale * 3];
     Color c;
@@ -98,17 +96,17 @@ void createImage(const char* file, u8* field) {
         for(int y =0; y < H; y++) {
             u8 color = field[x + y * W];
             switch(field[x + y * W]) {
-                case 0: c  = BLUE; break;
-                case 1: c  = BLACK; break;
-                case 2: c  = RED; break;
-                default: c = BLACK; break;
-            }
-            drawSquare(output, {x, y}, c);
+                case 0: c  = WALL; break;
+                case 1: c  = BACK; break;
+                case 2: c  = AUTO; break;
+                default: c = BACK; break;
+            } drawSquare(output, {x, y}, c);
         }
-    drawSquare(output, {0, 0}, {255, 255, 255, 255});
-    drawSquare(output, {W -1, H -1}, {255, 255, 255, 255});
+    drawSquare(output, {0   ,    0}, ENDS);
+    drawSquare(output, {W -1, H -1}, ENDS);
     image_create(file, output, W * Scale, H * Scale);
 }
+
 int main() {
     u8 *field = new u8[W * H];
     std::cout << "Generating...\n";
